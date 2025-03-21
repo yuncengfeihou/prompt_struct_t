@@ -1,0 +1,11 @@
+{
+    "display_name": "Prompt Struct Logger",
+    "loading_order": 14,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "",
+    "author": "你的名字",
+    "version": "1.0.0",
+    "homePage": ""
+}
