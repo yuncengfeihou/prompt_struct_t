@@ -1,57 +1,38 @@
-import { pluginAPI_t } from '../../../pluginAPI.js';
+import { eventSource, event_types } from "../../../../script.js";
 
-const PLUGIN_NAME = "prompt-struct-logger";
+const extensionName = "prompt-logger"; // 插件文件夹名称
 
-/** @type {pluginAPI_t} */
-const plugin = {
-    info: {
-        '': {
-            name: "Prompt Struct Logger",
-            avatar: "",
-            description: "一个用于记录和显示 prompt_struct_t 数据的插件，用于调试目的。",
-            description_markdown: "一个用于记录和显示 `prompt_struct_t` 数据的插件，用于调试目的。",
-            version: "1.0.0",
-            author: "你的名字",
-            homepage: "",
-            issuepage: "",
-            tags: []
+console.log(`[${extensionName}] 插件开始加载.`);
+
+eventSource.on(event_types.CHAT_COMPLETION_PROMPT_READY, async (event) => {
+    try {
+        console.log(`[${extensionName}] 捕获到 ${event_types.CHAT_COMPLETION_PROMPT_READY} 事件.`);
+        if (!event || !event.prompt_struct) {
+            console.error(`[${extensionName}] 错误: 事件对象或 prompt_struct 缺失.`);
+            console.error(`[${extensionName}] 事件详情:`, event);
+            return; // 退出事件处理，防止后续代码报错
         }
-    },
-    Init: () => {
-        console.log(`[${PLUGIN_NAME}] 初始化插件.`);
-    },
-    Load: () => {
-        console.log(`[${PLUGIN_NAME}] 加载插件.`);
-    },
-    Unload: (reason) => {
-        console.log(`[${PLUGIN_NAME}] 卸载插件. 原因: ${reason}`);
-    },
-    Uninstall: (reason, from) => {
-        console.log(`[${PLUGIN_NAME}] 卸载插件. 原因: ${reason}, 来源: ${from}`);
-    },
-    interfaces: {
-        chat: {
-            ReplyHandler: async (reply, args) => {
-                try {
-                    console.log(`[${PLUGIN_NAME}] ReplyHandler 被调用.`);
-                    if (!args || !args.prompt_struct) {
-                        console.error(`[${PLUGIN_NAME}] 错误: prompt_struct 未定义.`);
-                        return false; // 插件未处理回复
-                    }
 
-                    console.log(`[${PLUGIN_NAME}] 尝试序列化并输出 prompt_struct_t 数据到控制台...`);
-                    const promptStructData = JSON.stringify(args.prompt_struct, null, 2);
-                    console.log(`[${PLUGIN_NAME}] prompt_struct_t 数据:`, promptStructData);
-                    console.log(`[${PLUGIN_NAME}] prompt_struct_t 数据输出完成.`);
+        const promptStruct = event.prompt_struct;
 
-                    return false; // 插件未修改回复，继续正常流程
-                } catch (error) {
-                    console.error(`[${PLUGIN_NAME}] ReplyHandler 中发生错误:`, error);
-                    return false; // 发生错误，插件未处理回复
-                }
-            }
+        if (!promptStruct) {
+            console.error(`[${extensionName}] 错误: prompt_struct 为空.`);
+            return; // 退出事件处理，防止后续代码报错
+        }
+
+        console.log(`[${extensionName}] prompt_struct 数据:`);
+        console.log(JSON.stringify(promptStruct, null, 2)); // 使用 JSON.stringify 格式化输出，缩进为 2 个空格
+
+        console.log(`[${extensionName}] 成功输出 prompt_struct 数据到控制台.`);
+
+    } catch (error) {
+        console.error(`[${extensionName}] 发生错误:`, error);
+        console.error(`[${extensionName}] 错误类型:`, error.name); // 输出错误类型
+        console.error(`[${extensionName}] 错误信息:`, error.message); // 输出更详细的错误信息
+        if (error.stack) {
+            console.error(`[${extensionName}] 错误堆栈:`, error.stack); // 输出错误堆栈信息，方便追踪错误源头
         }
     }
-};
+});
 
-export default plugin;
+console.log(`[${extensionName}] 插件完成加载，并已注册 ${event_types.CHAT_COMPLETION_PROMPT_READY} 事件监听器.`);
